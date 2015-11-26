@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>About</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='about.css')}}">
+	<link rel="shortcut icon" href="{{url_for('static',filename='images/favicon.ico')}}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="row header-row">
+			<div class="col-md-6 col-md-offset-6">
+				<div id="signInButton" class="pull-right">
+					<span class="g-signin"
+		                  data-scope="openid email"
+		                  data-clientid="896626621723-hcadh5gel95nodhqs2j3qg19s65t9m4i.apps.googleusercontent.com"
+		                  data-redirecturi="postmessage"
+		                  data-accesstype="online"
+		                  data-cookiepolicy="single_host_origin"
+		                  data-callback="signInCallback"
+		                  data-approvalprompt="auto">
+		            </span>
+		        </div>
+		    </div>
+		</div>
+  	</div>
+  	<div class="container">
+  		<div class="row">
+  			<div class="col-md-4">
+				<dl>
+					<dt class="first" id="dunner"><span>DUNNER</span> IS A ...</dt>
+					<dd>&nbsp;</dd>
+					<dt class="below" id="scheduler">SCHEDULER</dt>
+	            	<dd><span class="c">have recipes done at specific times</span></dd>
+				</dl>
+			</div>
+			<div class="col-md-4">
+				<dl>
+		            <dt class="first below">CRUD APP</dt>
+		            <dd><span class="a high">store, create, edit, and delete recipes</span></dd>
+		            <dt class="second below">TIMER</dt>
+					<dd><span class="d">countdown recipes</span></dd>
+		        </dl>
+			</div>
+			<div class="col-md-4">
+				<dl>
+					<dt class="first below">ITEMIZER</dt>
+					<dd><span class="b">email yourself scaled shopping lists</span></dd>
+					<dt class="second below">REFINER</dt>
+			        <dd><span class="e">time recipes / edit accordingly</span></dd>
+		        </dl>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+					<ol class="carousel-indicators">
+						<li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+				    	<li data-target="#carousel-example-generic" data-slide-to="1"></li>
+				    	<li data-target="#carousel-example-generic" data-slide-to="2"></li>
+				    	<li data-target="#carousel-example-generic" data-slide-to="3"></li>
+				    	<li data-target="#carousel-example-generic" data-slide-to="4"></li>
+				  	</ol>
+				  	<div class="carousel-inner" role="listbox">
+				    	<div class="item active a">
+				      		<img src="{{url_for('static',filename='images/hub.png')}}" alt="...">
+				    	</div>
+				    	<div class="item b">
+				      		<img src="{{url_for('static',filename='images/prep.png')}}" alt="...">
+				    	</div>
+				    	<div class="item c">
+				      		<img src="{{url_for('static',filename='images/cook_plan.png')}}" alt="...">
+				    	</div>
+
+				    	<div class="item d">
+				      		<img src="{{url_for('static',filename='images/cook.png')}}" alt="...">
+				    	</div>
+				    	<div class="item e">
+				      		<img src="{{url_for('static',filename='images/post_mortem.png')}}" alt="...">
+				    	</div>
+				  	</div>
+				  	<a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+				    	<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+				    	<span class="sr-only">Previous</span>
+				  	</a>
+				 	<a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+				    	<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+				    	<span class="sr-only">Next</span>
+				  	</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$.getScript("{{url_for('static',filename='bootstrap.min.js')}}", function() {
+
+			$('.carousel').carousel({
+	  			interval: false
+			});
+
+			$(document).on('slide.bs.carousel','.carousel', function() {
+				$('.high').removeClass('high');
+			});
+
+			$(document).on('slid.bs.carousel','.carousel', function(event) {
+				var class_number = $(event.relatedTarget).attr('class').substring(5,6);
+				$('span.'+class_number).addClass('high');
+			});
+		});
+
+		function signInCallback(authResult) {
+	    	$.ajax({  /// added for debugging.  remove, eventually.
+			  	type: 'POST',
+			  	contentType: 'application/json',
+			  	url: '/debuglogin',
+			  	data: JSON.stringify({authResult}),
+			  	dataType:'json'
+			});
+	    	if (authResult['code'] && authResult['status']['method']!=='AUTO') {  /// added second conditioin to prevent automatic sign in after logout.
+	    		//$('#signinButton').hide();  // hide sign-in button now that user is authorized
+	    		console.log('triggering');
+		        $.ajax({   // send one-time-use code to server.  if server responds, write 'login successful' message to page, then redirect back to hub
+		          type: 'POST',
+		          url: '/gconnect?state={{STATE}}',
+		          processData: false,
+		          data: authResult['code'],
+		          contentType: 'application/octet-stream; charset=utf-8',
+		          success: function(result) {
+		            if (result) {  // handle or verify the server response if necessary.
+		              	//$('#signInButton').hide();
+		              	$('#signInButton').replaceWith('<h4 class="pull-right">Redirecting ...</h4>')
+		              	//$('h4').show('slow');
+		              	setTimeout(function() {window.location.href = "/hub";}, 4000);
+		            } else if (authResult['error']) {
+		            	console.log('There was an error: ' + authResult['error']);
+		            } else {
+		            	console.log('Failed to make a server-side call. Check your configuration and console.');
+		            };
+		          }
+		        });
+	        };
+	    };
+	</script>
+</body>
+</html>

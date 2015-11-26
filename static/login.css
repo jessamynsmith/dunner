@@ -1,0 +1,38 @@
+body {
+  background-color:#f1f1f1;
+}
+.header-row {
+  margin-top:2%;
+  height:41px;
+}
+.col-md-6 {
+  padding:0;
+}
+#signInButton {
+    margin-right:3.94%;
+}
+h4 {
+  display:inline-block;
+  margin-right:3.94%;
+  margin-top:0;
+}
+
+.img-row {
+  margin-top:9%;
+}
+img {
+  display:block;
+  margin:auto;
+}
+.info-row {
+  margin-top:20%;
+}
+.info-row a {
+  margin-right:2%;
+}
+
+
+
+
+
+

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Prep</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='prep.css')}}">
+	<link rel="shortcut icon" href="{{url_for('static',filename='images/favicon.ico')}}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="{{url_for('static',filename='moment.js')}}"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img src="{{url_for('static',filename='images/logo.png')}}" id="hub">
+            </a>
+        </div>
+        <button id="countdown-button" type="button" class="btn navbar-btn countdown">Countdown to Cook Start</button>
+        <ul class="nav navbar-nav navbar-right">
+        	<li><a id="cook-button" data-toggle="modal" data-target="#myModal" href="#">Cook</a></li>
+            <li><a href="#" id="help">Help</a></li>
+            <li><a href="#" id="gdisconnect">Log Out</a></li>
+        </ul>
+      </div>
+    </nav>
+	<div class="container">
+		{% for recipe in recipes %}
+		{% set index = loop.index0 %}
+		<div class="row recipe-row">
+			<div class="row recipe-header-row">
+				<div class="col-md-9 col-md-offset-3 form-group form-inline">
+					{% set title = recipe.name %}
+					{% if title|length > 26 %}
+					{% set title = title[0:26] + ' ...' %}
+					{% endif %}
+					<h2>{{title}} × </h2>
+					{% set recipe_id = recipe.id %}
+					<input class = "scaleFactor form-control" name = "{{recipe_id}}" type="number" step="0.01" min = "0.01" value="{{last[recipe_id|string]['scale_factor']}}">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					<h4>INGREDIENTS</h4>
+					<ul>
+						{% for ingredient in ingredients[index] %}
+						<li class="ingredient">
+							{% set name, number, units = ingredient.name, ingredient.number, ingredient.units %}
+							{% if number %}
+							{{name}}, <span class="ingredient-number">{{number}}</span>
+							{% if units %}
+							{{units}}
+							{% endif %}
+							{% elif units %}
+							{{name}}, {{units}}
+							{% else %}
+							{{name}}
+							{% endif %}
+						</li>
+						{% if number %}
+						<input type="hidden" value="{{number}}">
+						{% endif %}
+			            {% endfor %}
+			        </ul>
+				</div>
+				<div class="col-md-9">
+					{% set prep = prep_steps[index] %}
+					{% if prep %}
+					<h4>PREP STEPS</h4>
+					<ul class="prep-directions">
+						{% for step in prep %}
+						<li class="prep-direction">{{step.description}}</li>
+						{% endfor %}
+					</ul>
+					{% endif %}
+					{% set cook = cook_steps[index] %}
+					{% if cook %}
+					<h4>COOK STEPS</h4>
+					<ol>
+						{% for step in cook %}
+				  		<li>{{step.description + ' (' + step.duration|string + ' minutes)'}}</li>
+				  		{% endfor %}
+					</ol>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+		<div class="row submit-row">
+            <div class="col-md-12 submit-container">
+            	<button type="button" class="btn" id="email-ingredients">Email Me Ingredient List</button>
+            </div>
+        </div>
+	</div>
+	{% include 'cook_plan.html' %}
+	<script type="text/javascript">
+
+		var last = {{last|tojson}},
+			durations = {{durations|tojson}};
+
+		$('.recipe-row').each(function() {   // if dealing with recipe without ingredient numbers
+			if ($(this).find('.ingredient-number').length === 0) {
+				var scaler = $(this).find('.scaleFactor'),
+					header = $(this).find('h2'),
+					value = header.html();
+				scaler.hide();  // hide scale input with value 1 (value needed for storing recent selections)
+				scaler.val('1.0');
+				header.html(value.substring(0,value.length-3));  // remove multiplication sign
+			};
+		});
+
+		function rescaleIngredients() {
+			var	value = $(this).val(),
+				ingredient_numbers = $(this).parents('.recipe-row').first().find('.ingredient-number');
+			ingredient_numbers.each(function(){
+				var original_value = $(this).parent().next().val();
+				$(this).html((original_value*value).toFixed(2));
+			});
+		};
+
+		$('.scaleFactor').each(rescaleIngredients);
+
+		function getSecondsToReminder() {  /// get number of seconds before user should be reminded to start cooking
+			var meal_time = last.meal_time;
+			if (meal_time==='asap') {
+				return false
+			} else {
+				var dict = [],
+					recipe_ids = Object.keys(durations);
+				recipe_ids.forEach(function(recipe_id) {dict.push(durations[recipe_id]-last[recipe_id]['relative_finish_time'])});
+				var earliest_meal_time = Math.max.apply(Math,dict),  /// minutes from cook start to first courses
+					start_time_buffer = 10,  /// 10 seconds added to relative start times
+					estimated_reaction_time = 30,  /// give user 30 seconds to start cooking
+					reminder_time = moment(new Date(meal_time)).subtract(earliest_meal_time,'minutes').subtract(start_time_buffer+estimated_reaction_time,'seconds'),
+					now = moment(); /// NEW
+				if (reminder_time<now) {  /// NEW
+					return false
+				} else {
+					return reminder_time.diff(now,'seconds')  /// NEW
+				};
+			};
+		};
+
+		function giveCountdownOption() {   /// if meal time on file is possible, offer a countdown to cook
+			if (getSecondsToReminder()) {$('#countdown-button').show()};
+		};
+
+		giveCountdownOption();
+
+		$(document).on('change','.scaleFactor', rescaleIngredients);
+
+		$(document).on('change', '.scaleFactor', function(event) {
+			setIntervalX(function() {$(event.target).parents('.recipe-row').first().find('.ingredient-number').toggleClass('high');},500,1,'scale_factors_changing');
+		});
+
+		$(document).on('click','.prep-direction', function() {
+			$(this).toggleClass('done');
+		});
+
+		function pad(number) {
+			if (number < 10) {return '0' + number;};
+			return '' + number;
+		};
+
+		function formatTime(time) {
+			var hour = parseInt(time / 3600),
+				min = parseInt(time / 60) - (hour*60),
+        		sec = time - (hour*3600) - (min*60);
+        	return (hour > 0 ? pad(hour) : "00") + ":" + (min > 0 ? pad(min) : "00") + ":" + pad(sec);
+		};
+
+		function updateCountdown() {  /// updates countdown to cook start
+			seconds_til_cook -= 1;
+			if (seconds_til_cook===0) {
+				new Audio("/static/warning.wav").play();
+				clearInterval(timer_id);  /// stop timer
+				$('#countdown-paragraph').replaceWith('<button id="countdown-button" type="button" class="btn navbar-btn countdown">Countdown to Cook Start</button>').hide();
+				var content = 'For this meal to be ready ' + moment(new Date(last['meal_time'])).format('MM/DD/YYYY [at] hh:mm A') + ', start cooking ASAP.';
+				last['meal_time'] = 'asap';
+				$('#myModal').modal('show');
+				createModalAlert('info',content);
+				window.setTimeout(function(){$('.alert').remove(); createModalAlert('danger','The meal time you selected is no longer possible.')},30000);
+			} else {
+				$('#timer').html(formatTime(seconds_til_cook));
+			};
+		};
+
+		$(document).on('click','#countdown-button', function() {
+			var seconds_to_reminder = getSecondsToReminder();
+			if (seconds_to_reminder) {
+				window.timer_id = setInterval(updateCountdown, 1000);
+				window.seconds_til_cook = seconds_to_reminder;
+				$('#countdown-button').replaceWith('<p id ="countdown-paragraph" class="navbar-text countdown">Start cooking in <span id="timer">' + formatTime(seconds_til_cook) + '</span></p>');
+			} else {  /// if meal time is not possible
+				var content = '<div class="alert alert-danger alert-dismissible" role="alert"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span></button> A countdown is no longer possible.</div>';
+				$('.alert').remove();
+				$('#countdown-button').hide().after(content);
+			};
+		});
+
+		function checkForCountdown() {  /// if countdown is running when modal is opened...
+			$('.alert').remove();
+			if ($('#countdown-paragraph').length) {
+				clearInterval(timer_id);
+				$('#countdown-paragraph').replaceWith('<button id="countdown-button" type="button" class="btn navbar-btn countdown">Countdown to Cook Start</button>').hide();
+			} else {
+				$('#countdown-button').hide();
+			};
+		};
+
+		$(document).on('click','#email-ingredients', function() {
+			$(this).prop('disabled',true);
+			$('.alert').remove();
+			$('.countdown').after('<div class="timer-loader"></div>').after('<p class="navbar-text load-text">Sending Ingredient List ...</p>');
+			if ($('.countdown:visible').length) {
+				$('.timer-loader').css('left','17.5%');
+				$('.load-text').css('left','19.5%');
+			};
+			var	success = function(data) {
+					var content = '<div class="alert alert-success alert-dismissible" role="alert"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span></button> Ingredient List Sent!</div>';
+					$('.timer-loader,.load-text').remove();
+					$('.countdown').after(content);
+					if ($('.countdown:visible').length) {
+						$('.alert').css('left','17.5%');
+					};
+					$('#email-ingredients').prop('disabled',false);
+				},
+				body = $('.ingredient').map(function() {return $(this).text().replace(/\s\s+/g,' ').trim()}).sort().get().join('\n'),
+				subject = 'Ingredients for ';
+			$('.scaleFactor').each(function() {
+				var recipe_title = $(this).prev().text(),
+					scale_factor = $(this).val(),
+					reduced_title = (recipe_title.indexOf('×') === -1) ? recipe_title : recipe_title.substring(0,recipe_title.length-3),
+					title_plus_scale_factor = (parseFloat(scale_factor) !== 1) ? reduced_title + ' (' + scale_factor + '×) + ' : reduced_title + ' + ';
+				subject+=title_plus_scale_factor;
+			});
+			$.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/email',
+                data: JSON.stringify({'body':body,'subject':subject.substring(0,subject.length-3)}),
+                dataType:'text',
+                success:success
+            });
+		});
+
+		function loadStyleSheet(src) {
+            if (document.createStyleSheet){
+                document.createStyleSheet(src);
+            } else {
+                $('head').append($('<link rel="stylesheet" href='+src+'>'));
+            };
+        };
+
+		function renderModal() {  /// no need to post to server for durations here: we're dealing with a fixed set of recipes
+			$('h2').each(function() {
+				var recipe_title = $(this).html(),
+					reduced_title = (recipe_title.indexOf('×') === -1) ? recipe_title : recipe_title.substring(0,recipe_title.length-3),
+					recipe_id = $(this).next().attr('name'),
+					value = last[recipe_id]['relative_finish_time'],
+					content = '<li> <div class="form-group form-inline recipe-group"> ' + '<label class="h5" for=' + recipe_id + '>' + reduced_title + '</label> ' +
+					'<input class = "form-control relativeFinishTime" name=' + recipe_id + ' type="number" step="1" min = "0" value=' + value + '> </div> </li>';
+				$('#relative-finish-times').append(content);
+			});
+			window.relative_finish_times = $('.relativeFinishTime');
+			setCookTime();
+			setEarliestMealTime();
+			checkForCountdown();
+			var gmt = $('#general_meal_time'),
+				meal_time = last.meal_time;
+			if (meal_time !== 'asap') {
+				$('#datetimepicker').data("DateTimePicker").date(moment(new Date(meal_time)));
+				gmt.val('Delay').trigger('change',[true]);
+				return
+			};
+			gmt.val('ASAP').change();
+		};
+
+		$.get('/getphone',function(data) {
+			window.user_phone = data;
+		});
+
+		loadStyleSheet("{{url_for('static',filename='cook_plan.css')}}");
+
+		loadStyleSheet("{{url_for('static',filename='bootstrap-datetimepicker.min.css')}}");
+
+		loadStyleSheet("{{url_for('static',filename='spinner.css')}}");
+
+		$.getScript("{{url_for('static',filename='bootstrap.min.js')}}");
+
+		$.getScript("{{url_for('static',filename='bootstrap-datetimepicker.min.js')}}", function() {
+			$.getScript("{{url_for('static',filename='cook_plan.js')}}");
+		});
+	</script>
+</body>
+</html>

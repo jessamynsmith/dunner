@@ -1,0 +1,103 @@
+html, body {
+	height:100%;
+}
+body {
+	background-color:#f1f1f1;
+}
+img {
+  height:100%;
+}
+.btn:focus {
+	outline:none;
+}
+.navbar-left {
+	margin:0;
+	margin-right:1.3%;
+}
+#remember {
+	display:none;
+}
+.alert {
+	margin:0;
+	border-top:0;
+	border-bottom:0;
+}
+@media screen and (orientation:landscape) {
+	.navbar-left, .alert {
+		position:absolute;
+		left:7%;
+	}
+}
+@media screen and (orientation:portrait) {
+	.navbar-left, .alert {
+		position:relative;
+	}
+}
+.container {
+	height:92.3%;
+}
+.h1-row {
+	margin-top:2%;
+}
+.h1-container {
+	padding-left:0;
+}
+h1 {
+	margin:0;
+}
+.recipe-row {
+	margin-top:3%;
+	height:68%;
+}
+.recipe-container {
+	height:100%;
+	border:1px solid #ccc;
+	border-bottom:0;
+	overflow-y:scroll;
+	background-color:#fff;
+	padding-top:2%;
+	padding-left:2%;
+}
+.recipe-checkbox {
+	width:100%;
+	margin-bottom:8%;
+	margin-top:0;
+}
+.submit-row {
+	margin-top:0;
+}
+.submit-container {
+  padding-left:0;
+  padding-right:0;
+}
+.go {
+	border-style:none;
+	margin:0.2%;
+	background-color:rgb(250, 116, 79);
+	color:#fff;
+}
+.go:hover {
+  	background-color:#C1400C;
+}
+@media screen and (orientation:landscape) {
+	.go {
+		width:100% !important;
+	}
+	.go:disabled {
+		width:100%;
+	}
+}
+@media screen and (orientation:portrait) {
+	.go {
+		width:100% !important;
+	}
+	.go:disabled {
+		width:100%;
+	}
+}
+.popover-title {
+	white-space:nowrap;
+}
+.popover-content {
+	text-align:center;
+}

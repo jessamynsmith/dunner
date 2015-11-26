@@ -1,0 +1,73 @@
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <div class="row">
+        	<div class="col-md-3 col-md-offset-3">
+	        	<h3 class="modal-title" id="myModalLabel">Cook Plan</h3>
+	        </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+    			<div class="col-md-6 col-md-offset-3">
+            <h4 class="italic" id="rel-fin-times-header">Relative Finish Times (min)</h4>
+  	      	<ul id="relative-finish-times"></ul>
+  	      	<h5 id="total-cook-time-header">* Total Cook Time = <span id="cookTime"></span> Minutes</h5>
+  	      	<h5 id="earliest-meal-time-header">* Earliest Possible Meal Time in <span id="EPMT"></span> Minutes</h5>
+    			</div>
+    		</div>
+    		<div class="row">
+    			<div class="col-md-9 col-md-offset-3 form-group form-inline">
+    				<h4 class="italic" id = "mealtime-header">Meal Time</h4>
+    				<SELECT class = "form-control" id="general_meal_time">
+    					<option value="ASAP">ASAP</option>
+    	    		<option value="Delay">Delay Until ...</option>
+    				</SELECT>
+            <div class='input-group date' id='datetimepicker'>
+                <input id="picker-input" type='text' class="form-control">
+                <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+            </div>
+    			</div>
+    		</div>
+    		<div class="row">
+    			<div class="col-md-6 col-md-offset-3">
+            <label id="reminder-header" class="h5"><input id="reminder-toggle" type="checkbox">Remind me to start cooking <span id="startCooking"></span><span id="rem_ad_1"> ...</span></label>
+    				<div class="form-group form-inline reminder">
+    					<input class="form-control" id="minutes_notice" type="number" step="1" min="0" placeholder="Notice *">
+    					<span class="h5">minutes in advance, by</span>
+    					<SELECT id="reminder_method" class = "form-control">
+                <option value="" disabled selected>Method *</option>
+    					  <option value="Email">emailing me</option>
+    	    			<option value="Text">texting me</option>
+    				  </SELECT>
+    				  <span id="rem_ad_2" class="h5">.</span>
+    				</div>
+      			<div class="form-group form-inline phone_info">
+              <span class="h5">at</span>
+      				<input id="phone_number" class="form-control" type="text" placeholder="Phone Number *">
+      				<span class="h5">/</span>
+      				<SELECT class = "form-control" id="phone_carrier" name="phone_carrier">
+                <option value="" disabled selected>Carrier *</option>
+    						<option value="ATT">AT&amp;T</option>
+    		    		<option value="tMobile">T-Mobile</option>
+    		    		<option value="Verizon">Verizon</option>
+    		    		<option value="Sprint">Sprint</option>
+    		    		<option value="USCellular">U.S. Cellular</option>
+    					</SELECT>
+    					<span class="h5"> ...</span>
+              <label class="h5" id="remember-header"><input id="remember_phone" type="checkbox">and remember my phone info.</label>
+      			</div>
+    			</div>
+    		</div>
+      </div>
+      <div class="modal-footer">
+        <input id="start-cooking-now" class="btn" type='button' value="Start Cooking ASAP!">
+        <input id="schedule-reminder" class="btn" type='button' value="Schedule Reminder">
+      </div>
+    </div>
+  </div>
+</div>

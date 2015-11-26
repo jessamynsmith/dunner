@@ -1,0 +1,93 @@
+.modal-body {
+	background-color:#f1f1f1;
+}
+#rel-fin-times-header {
+	margin-bottom:4%;
+}
+.recipe-group {
+	margin-bottom:2%;
+}
+#total-cook-time-header {
+	margin-top:5%;
+	margin-bottom:5%;
+}
+#earliest-meal-time-header {
+	margin-bottom:6%;
+}
+#general_meal_time {
+	margin-left:3%;
+}
+.date {
+	margin-left: 2%;
+	width: 35%;
+}
+.modal-footer {
+	position:relative;
+}
+#start-cooking-now, #schedule-reminder {
+	border-style:none;
+	background-color:rgb(250, 116, 79);
+	color:#fff;
+	margin-right:25%;
+}
+#start-cooking-now:hover, #schedule-reminder:hover {
+  	background-color:#C1400C;
+}
+#minutes_notice {
+	width:25%;
+}
+#phone_carrier {
+	width:31%;
+	margin-left:1%;
+}
+#phone_number {
+	width:31%;
+	margin-right:1%;
+}
+.modal-alert {
+	left: 0 !important;
+    bottom: 0;
+    top: 0;
+    padding-top: 2.5%;
+}
+.modal-title {
+	display:inline-block;
+}
+#mealtime-header {
+	display:inline-block;
+}
+#relative-finish-times {
+	list-style-type:none;
+}
+.relativeFinishTime {
+	width:23% !important;
+	float:right;
+}
+.needed_reminder_info {
+	border-color: #a94442;
+}
+.high {
+	background-color: rgb(160, 220, 192);
+}
+#reminder-toggle,#remember_phone {
+	margin-right:7px;
+	-ms-transform: translate(0,12%);
+	-webkit-transform: translate(0,12%);
+    transform: translate(0,12%);
+}
+.italic {
+	font-style: italic;
+}
+.phone_info {
+	margin-bottom:0;
+}
+#reminder-header,.reminder {
+	margin-bottom:5%;
+}
+#remember-header {
+	margin-top:5%;
+}
+.reminder,.phone_info {
+	margin-left:19px;
+	display:none;
+}

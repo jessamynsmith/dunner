@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Post-mortem</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='post_mortem.css')}}">
+	<link rel="shortcut icon" href="{{url_for('static',filename='images/favicon.ico')}}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand redirect" href="{{url_for('doStuff')}}">
+                <img src="{{url_for('static',filename='images/logo.png')}}">
+            </a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Help</a></li>
+            <li><a href="{{url_for('gdisconnect')}}">Log Out</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">
+        <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="col-md-2">Recipe</th>
+                <th class="col-md-6">Step</th>
+                <th class="col-md-2">Estimated Duration (min)</th>
+                <th class="col-md-2">Actual Duration (min)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for step in steps %}
+              {% set correction = corrections[step[1].id|string]|int %}
+              {% set actual_duration = (step[1].duration*60 + correction)/60 %}
+              <tr>
+                <td class="col-md-2">{{step[0].name}}</td>
+                <td class="col-md-6">{{step[1].description}}</td>
+                <td class="col-md-2 text-center">{{step[1].duration}}</td>
+                <td class="col-md-2 text-center"><span class="high">{{'%0.2f' % actual_duration|float}}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+        <div class="row submit-row">
+            <div class="col-md-12 submit-container">
+                <button type="button" class="btn" id="email-corrections">Email Me Table</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).on('click','#email-corrections', function() {
+            $(this).prop('disabled',true);
+            $('.alert').remove();
+            $('.navbar-header').after('<div class="timer-loader"></div>').after('<p class="navbar-text load-text">Sending Table ...</p>');
+            var content = $('tbody').text().split('\n').map(function(e) {return e.trim()}).filter(Boolean),
+                keys = ['Recipe', 'Step','Estimated Duration (min)', 'Actual Duration (min)'],
+                subject = "Time Corrections for ",
+                old_title = '',
+                i = 0,
+                body = content.reduce(function(previousValue, currentValue) {
+                    var current_plus_key = keys[i] + ': ' + currentValue + '\n';
+                    if (i === 3) {current_plus_key += '\n'; i = 0;} else {if (i === 0 && currentValue !== old_title) {subject+=currentValue+' + '; old_title=currentValue;}; i++;};
+                    return previousValue + current_plus_key;
+                },""),
+                success = function(data) {
+                    var content = '<div class="alert alert-success alert-dismissible" role="alert"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span></button> Table Sent!</div>';
+                    $('.timer-loader,.load-text').remove();
+                    $('.navbar-header').after(content);
+                    $('#email-corrections').prop('disabled',false);
+                };
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/email',
+                data: JSON.stringify({'body':body,'subject':subject.substring(0,subject.length-3)}),
+                dataType:'text',
+                success:success
+            });
+        });
+
+        function loadStyleSheet(src) {
+            if (document.createStyleSheet){
+                document.createStyleSheet(src);
+            } else {
+                $('head').append($('<link rel="stylesheet" href='+src+'>'));
+            };
+        };
+
+        loadStyleSheet("{{url_for('static',filename='spinner.css')}}");
+
+        $.getScript("{{url_for('static',filename='bootstrap.min.js')}}");
+    </script>
+</body>
+</html>

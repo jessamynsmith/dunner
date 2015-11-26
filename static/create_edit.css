@@ -1,0 +1,83 @@
+html, body {
+	height:100%;
+}
+body {
+	background-color:#f1f1f1;
+	padding-top:4%;
+}
+img {
+	height:100%;
+}
+.alert {
+	margin:0;
+	border-top:0;
+	border-bottom:0;
+	white-space:nowrap;
+}
+@media screen and (orientation:landscape) {
+	.alert {
+		position:absolute;
+		left:7%;
+	}
+}
+@media screen and (orientation:portrait) {
+	.alert {
+		position:relative;
+	}
+}
+.mac-row {
+	margin-top:2%;
+	margin-bottom:2%;
+}
+.input-lg {
+	margin-bottom:7%;
+}
+.panel-heading {
+	background-color:#f8f8f8 !important;
+
+}
+.form-control[placeholder="Duration (min)"], #add_direction {
+	vertical-align:top;
+}
+.col-md-1 {
+	width: -moz-min-content;
+  	width: -webkit-min-content;
+}
+.form-row {
+	margin-top:1%;
+}
+#ingredient_0, #direction_0 {
+	margin-top:0;
+}
+.submit-container {
+	margin-bottom:2%;
+}
+.submit-container button {
+	width:10%;
+	margin-left:2.5%;
+	float:right;
+	border-style:none;
+	background-color:rgb(250, 116, 79);
+	color:#fff;
+	display:none;
+}
+.submit-container button:focus {
+	outline:none;
+}
+.submit-container button:hover {
+	background-color:#C1400C;
+}
+textarea {
+	max-width:100%;
+}
+.panel-title {
+	font-size:18px;
+	color:#555;
+}
+.attention {
+	border-color: #a94442;
+}
+.load-text {
+	position:absolute;
+	left:10%;
+}

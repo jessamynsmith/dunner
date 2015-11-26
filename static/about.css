@@ -1,0 +1,66 @@
+body {
+	background-color:#f1f1f1;
+}
+#dunner span {
+	color:rgb(250, 116, 79);
+	color:#C1400C;
+}
+#dunner {
+	font-size:20px;
+}
+.col-md-12 {
+	margin-top:25px;
+}
+.carousel {
+	border:1px solid #ccc;
+}
+li {
+	border-color:#b3b3b3;
+	border:none !important;
+	background-color:rgba(250, 116, 79,0.5) !important;
+}
+li.active {
+	background-color:rgba(250, 116, 79,1) !important;
+}
+.carousel-control, .carousel-control:focus {
+	background-image:none !important;
+	text-shadow:none;
+	color:rgb(250, 116, 79);
+	opacity:1;
+}
+.carousel-control:hover {
+	color:#C1400C;
+	opacity:1;
+}
+.high {
+	background-color: rgb(255,207,136);
+	background-color:#d9edf7;
+}
+.first {
+	margin-top:5px;
+}
+.below {
+	margin-bottom:10px;
+}
+.second {
+	margin-top:25px;
+}
+#scheduler {
+	margin-top:27px;
+}
+.header-row {
+  margin-top:2%;
+  height:41px;
+}
+.col-md-6 {
+  padding:0;
+}
+#signInButton {
+    margin-right:3.94%;
+}
+h4 {
+  display:inline-block;
+  margin-right:3.94%;
+  margin-top:0;
+}
+

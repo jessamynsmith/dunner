@@ -1,0 +1,89 @@
+html, body {
+	height:100%;
+}
+body {
+	background-color:#f1f1f1;
+	padding-top:4%;
+}
+img {
+	height:100%;
+}
+.alert {
+	margin:0;
+	border-top:0;
+	border-bottom:0;
+}
+@media screen and (orientation:landscape) {
+	.alert {
+		position:absolute;
+		left:7%;
+	}
+}
+@media screen and (orientation:portrait) {
+	.alert {
+		position:relative;
+	}
+}
+.recipe-row {
+	margin-top:2%;
+	margin-bottom:4%;
+	border:1px solid #ccc;
+	padding:3%;
+	background-color:#fff;
+}
+.recipe-header-row {
+	margin-bottom:1%;
+}
+h2 {
+	display:inline;
+}
+.scaleFactor {
+	width:9% !important;
+	vertical-align:top !important;
+}
+.high {
+	background-color:#9EDFFF;
+	background-color:rgb(255,207,136);
+	background-color:#d9edf7;
+	background-color:rgb(255,207,136);
+	background-color: rgb(160, 220, 192);
+	background-color: rgba(160, 220, 192,0.75);
+}
+.prep-directions {
+	margin-bottom:2%;
+}
+.submit-row {
+	margin-bottom:4%;
+	padding-right:0;
+}
+.submit-container {
+	padding-right:0;
+}
+.submit-container button {
+	width:15%;
+	float:right;
+	border-style:none;
+	background-color:rgb(250, 116, 79);
+	color:#fff;
+}
+#countdown-button {
+	border-style:none;
+	background-color:rgb(250, 116, 79);
+	color:#fff;
+	display:none;
+	position:absolute;
+	left:7%;
+}
+.submit-container button:focus, #countdown-button:focus, #cook-button:focus {
+	outline:none;
+}
+.submit-container button:hover, #countdown-button:hover {
+	background-color:#C1400C;
+}
+.done {
+	text-decoration:line-through;
+}
+.load-text {
+	position:absolute;
+	left:10%;
+}

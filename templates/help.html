@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Help</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='help.css')}}">
+	  <link rel="shortcut icon" href="{{url_for('static',filename='images/favicon.ico')}}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="{{url_for('static',filename='bootstrap.min.js')}}"></script>
+</head>
+<body>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand redirect" href="{{url_for('doStuff')}}">
+                <img src="{{url_for('static',filename='images/logo.png')}}">
+            </a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="{{url_for('gdisconnect')}}">Log Out</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">
+        <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#hub">Hub</a>
+                </h4>
+              </div>
+              <div id="hub" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <p class="indent">Your Hub is where you select recipes to work with - prep, cook, edit, or delete.  It contains links to every page, except the Post-Mortem Page, and can be navigated back to by clicking "Dunner" in the navbar (far-left).  Before moving forward with a set of recipes, consider whether you have the manpower and equipment.  Remember that if a recipe's timings are inaccurate, someone will have to man the computer during a cook, to pause/skip steps.  Also, note that although Dunner was meant as a cooking tool, it is, more generally, a tool for executing sets of ordered, timed tasks, and may be useful beyond the kitchen.</p>
+                  <p class="indent">About the <span class="bold">Use Last Selections</span> checkbox - Dunner assumes that if you've selected a set of recipes, and clicked "Prep" or "Cook", then you're in the process of completing those recipes.  For your convenience, the recipes are remembered and automatically selected in the future, either until they're completed, deleted, or new selections are made.  Dunner will not remember recipes selected for editing: recipes can be edited (one at a time) without compromising a saved meal plan.  A set of recipes is considered complete when all are declared "Done" on the Cook Page.  Along with recipe selections, relative finish time, meal time, and scale factor selections* are also remembered.</p>
+                  <p>* For more on scale factors, see the Prep Panel; on relative finish times or meal times, the Cook Panel.</p>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#edit">Create and Edit</a>
+                </h4>
+              </div>
+              <div id="edit" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <p class="indent">The Create/Edit page is where you create and/or edit recipes.  To <span class="bold">create</span> a recipe, a title and at least one ingredient and direction are required.
+Ingredients must contain a name, but may also include an amount (how many or how much), and a unit of measurement (e.g. cups, tbsp, etc.).
+Directions must contain a description (e.g. "Preheat oven to 300 degrees."), but may also include a duration (the number of minutes required to complete a step).</p>
+                  <p class="indent">Dunner considers steps without durations <span class="bold">prep steps</span>, and the rest, <span class="bold">cook steps</span>. Prep steps are not presented on the Cook Page; cook steps are presented in the order they appear on the Create/Edit Page.  To minimize timing errors, keep cook steps to a minimum, enter ingredient details that, if left to chance, could lead to different cook times (e.g. the dimensions of a piece of meat), and account for any transferring and/or resting that may need to happen once cooking has begun.  Also, because only upcoming steps are presented on the Cook Page, include doneness clues (e.g. "When steak is browned on all sides ...") at the beginning of the following cook step's description.</p>
+                  <p class="indent">The Create/Edit page includes two buttons.  The <span class="bold">Save</span> Button saves changes to a recipe; the <span class="bold">Save As</span> Button creates new recipes, allowing a variation of a recipe to be quickly created while leaving the original intact.  It can also be used to make multiple batches of a recipe when multiple extra copies of the recipe are needed on the Cook Page.</p>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#prep">Prep</a>
+                </h4>
+              </div>
+              <div id="prep" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <p class="indent">The Prep Page is where to prepare for a cook.  If there is a valid meal time selection on file, the <span class="bold">Countdown to Cook Start</span> Button (a button that starts a countdown to when you need to start cooking to actualize the meal time) will be visible; if you do not require a specific meal time, start cooking at your leisure.  <span class="bold">Cross out prep steps</span> as they are completed by clicking them.  Review cook steps* before moving on to the Cook Page if needed.  Remember that if your recipes require long, inactive steps (e.g. braising), it might be possible to start cooking before you finish prepping.</p>
+                  <p class="indent">Preparing for a cook might also require shopping for ingredients, so the Prep Page helps you <span class="bold">scale recipes</span>, and <span class="bold">email yourself ingredient lists</span>.  When scaling up recipes, keep equipment and manpower limitations in mind.  At a certain point, it may make sense to fork a recipe, and send multiple copies to the Cook Page where each copy can represent a separate cooking vessel.  Dunner's default scale factor value is 1, which preserves the ingredient amounts entered when the recipe was created.  Scale factor selections are remembered*.</p>
+                  <p>* For more on cook/prep steps, see the Create and Edit Panel; on remembered selections, the Hub Panel.</p>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#cook">Cook</a>
+                </h4>
+              </div>
+              <div id="cook" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <p class="indent">To access the Cook Page, you must first finalize a <span class="bold">Cook Plan</span>.  This involves choosing a relative finish time for each recipe, and a meal time*.  A <span class="bold">relative finish time</span> is the number of minutes after first recipes finish you'd like a given recipe to finish.  Dunner's default relative finish time value is 0, since it is usually desirable to have every recipe done at the same time.  The purpose of the relative finish time feature, however, is to allow successive courses to be served on time.  If a recipe without cook steps requires a relative finish time, it too can be sent to the Cook Page.  Based on your relative finish time selections, for your information, Dunner will present two numbers: the <span class="bold">total cook time</span>, which is the number of minutes it will take for all recipes to be completed once you start executing cook steps, and the distance to the <span class="bold">earliest possible meal time</span>, or the number of minutes between the current moment and first recipes (those with relative finish times equal to zero) finishing.</p>
+                  <p class="indent">In terms of <span class="bold">selecting a meal time</span>, you basically have two options: the earliest possible meal time, or a delayed meal time.  The latter will require you to select a specific meal time, so you can know when you need to start cooking to actualize it.  Dunner does its best to restrict impossible meal times in the date/time picker, but your selection may expire if you are idle too long.  This is only likely to happen if you choose a meal time close to the earliest possible meal time, in which case you might as well start cooking as soon as possible.  Again, "cooking" means executing cook steps, not prep steps.  To <span class="bold">schedule a reminder</span> to start cooking, by text message or email, you must enter a notice amount (the number of minutes before the required cook start time you would like to be messaged), and possibly whether you want Dunner to remember your phone number, so you don't have to re-enter it in the future.  When choosing a notice amount, remember that the reminder feature is there to help you complete prep steps in time.  If you opt to have your phone number remembered, it can be removed from Dunner's records at any time by scheduling a reminder with the "remember" checkbox unchecked.  When you are ready to start cooking, select "ASAP" as your meal time, then click the <span class="bold">Start Cooking ASAP</span> button to load the Cook Page.</p>
+                  <p class="indent">The Cook Page is where cook steps, ordered according to a cook plan, are presented.  More specifically, once the <span class="bold">Start Cooking</span> button is pressed, for each recipe, the amount of time remaining before the current step is complete, and a description of the upcoming step are provided.  The <span class="bold">Total Time Remaining</span> button can be clicked at any point during a cook to find out how long before each recipe is done, assuming upcoming steps were accurately timed.  When an upcoming step is 30 seconds or less away, Dunner will warn you with a highlighted timer, and an alarm sound.  At this point, if the current step is not nearly complete, the recipe can be paused by clicking the <span class="bold">Not Ready</span> button.  Conversely, if at any point a step is ready, and you wish to move on to the next step, click the <span class="bold">Ready Now</span> button.  These buttons trigger Dunner to log the actual time spent on a given step, information that can be accessed after a cook, via the <span class="bold">Post-Mortem</span> button.  To ensure such information is accurate, click "Ready Now" as close to when a step is complete as possible.</p>
+                  <p>* Relative finish time and meal time selections are remembered.  For more on remembered selections, see the Hub Panel.</p>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                      <a data-toggle="collapse" data-parent="#accordion" href="#post-mortem">Post-Mortem</a>
+                    </h4>
+                </div>
+                <div id="post-mortem" class="panel-collapse collapse">
+                    <div class="panel-body">
+                      <p class="indent">The Post-Mortem Page is where any deviations from estimated durations that occurred during a cook are presented.  Actual durations can be used to edit a recipe, to make it more accurate time-wise.  If you do not want to edit recipes immediately after a cook, you can <span class="bold">email yourself a Post-Mortem</span> report, and go over it later.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#contact">Contact</a>
+                </h4>
+              </div>
+              <div id="contact" class="panel-collapse collapse">
+                <div class="panel-body">
+                  Email me (Jazz) at jasimtaqi@gmail.com.
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var referer = "{{referer}}";
+        $('#'+referer).addClass('in');
+    </script>
+</body>
+</html>

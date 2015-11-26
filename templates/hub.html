@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Hub</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
+	<link rel="stylesheet" href="{{url_for('static',filename='hub.css')}}">
+	<link rel="shortcut icon" href="{{url_for('static',filename='images/favicon.ico')}}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+	  <div class="container-fluid">
+	  	<div class="navbar-header">
+	  		<div class="navbar-brand">
+	  			<img src="{{url_for('static',filename='images/logo.png')}}">
+	  		</div>
+	    </div>
+	    <div class="checkbox navbar-left">
+			<label class="navbar-text" id="remember"><input type="checkbox"> Use Last Selections</label>
+	    </div>
+	    {% with messages = get_flashed_messages() %}
+		{% if messages %}
+		{% set class='alert alert-dismissible ' + messages[0] %}
+	    <div class="{{class}}" role="alert">
+	    	{{messages[1]}}
+	    	<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	    </div>
+	    {% endif %}
+		{% endwith %}
+      	<ul class="nav navbar-nav navbar-right">
+      		<li><a href="#" id="create">Create</a></li>
+      		<li><a href="#" id="help">Help</a></li>
+			<li><a href="#" id="gdisconnect">Log Out</a></li>
+      	</ul>
+	  </div>
+	</nav>
+	<div class="container">
+		<div class="row h1-row">
+			<div class="col-md-4 col-md-offset-4 h1-container">
+				<h1>Recipes</h1>
+			</div>
+		</div>
+		<div class="row recipe-row">
+			<div class="col-md-4 col-md-offset-4 recipe-container">
+				{% for recipe in recipes %}
+				<div class="checkbox recipe-checkbox">
+	    			<label><input class="recipe" value="{{recipe.id}}" type="checkbox" disabled>{{recipe.name}}</label>
+	  			</div>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="row submit-row">
+			<div class="col-md-4 col-md-offset-4 submit-container">
+				<button type="button" class="go btn" id="prep">Prep</button>
+				<button type="button" class="go btn" data-toggle="modal" data-target="#myModal">Cook</button>
+				<button type="button" class="go btn" id="edit">Edit</button>
+				<button type="button" class="go btn" id="delete" data-toggle="popover" data-trigger="manual" data-html=true title="Delete selected recipes?">Delete</button>
+			</div>
+		</div>
+	</div>
+	{% include 'cook_plan.html' %}
+	<script>
+
+		var last = {{last|safe}},
+		    remember = $('#remember').find('input'),
+			recipes = $('.recipe'),
+			go = $('.go');
+
+		function checkBeforeRemember() {
+			var condition_1 = true;  // checking that all last values are still in database (haven't been deleted)
+			for (id in last) {
+					var recipe = $('[value='+id+']');
+					if (recipe.length === 0 && id !== 'meal_time') {
+						condition_1 = false;
+					};
+				};
+			if (condition_1 === true) {
+				return true
+			};
+			return false
+		};
+
+		function setRecipes() {
+			if (remember.is(":checked")) {
+				recipes.each(function() {
+					$(this).prop('disabled', true);
+					if ($(this).val() in last) {
+						$(this).prop('checked', true);
+					} else {
+						$(this).prop('checked', false);
+					};
+				});
+				go.prop('disabled',false);
+			} else {
+				recipes.each(function() {
+					$(this).prop('disabled',false);
+					$(this).prop('checked', false);
+				});
+			};
+		};
+
+		function configureButtons() {
+			var number_recipes_selected = $(".recipe:checked").length;
+			if (number_recipes_selected > 0) {
+				if (number_recipes_selected === 1) {
+					go.prop('disabled',false);
+				} else {
+					$('#edit').prop('disabled',true);
+				};
+			} else {
+				go.prop('disabled',true);
+			};
+		};
+
+		function runRemember() {
+			remember.prop('checked',true);
+			remember.parent().show();
+			if(window.innerHeight < window.innerWidth){
+    			$('.alert').css('left','17.5%');
+			};
+		};
+
+		if (last !== null && checkBeforeRemember())  {
+			runRemember();
+		};
+
+		setRecipes();
+		configureButtons();
+
+		recipes.click(function() {
+			configureButtons();
+		});
+
+		remember.click(function() {
+			setRecipes();
+			configureButtons();
+		});
+
+		$(document).on('click','#delete',function(){
+			$('#delete').popover('toggle');
+		});
+
+		$(document).on('click','#confirm-delete',function(){
+			$('#delete').popover('hide');
+			var checked = recipes.filter(':checked');
+			$.ajax({
+			  type: "POST",
+			  url: '/delete',
+			  data: {recipe_ids:checked.map(function() {return $(this).val()}).get()},
+			  dataType: 'text',
+			  success: function(data) {
+				var content = '<div class="alert alert-success alert-dismissible" role="alert"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span></button> Recipes deleted.</div>';
+            	$('.alert').remove();
+            	$('.navbar-left').after(content);
+            	checked.parents('.recipe-checkbox').remove();
+            	if (last !== null && checkBeforeRemember())  {
+					runRemember();
+				} else {
+					remember.prop('checked',false);
+					remember.parent().hide();
+				};
+			  	//if (!checkBeforeRemember())  {  /// if last recipes are no longer available, uncheck and hide remember checkbox.
+					//remember.prop('checked',false);
+					//remember.parent().hide();
+				//} else {runRemember();};
+				setRecipes();
+				configureButtons();
+			  }
+			});
+		});
+
+		$(document).on('click','#prep', function() {
+			var remembering = remember.prop('checked'),
+				last = getUpdatedLast(remembering),
+				string = (remembering) ? JSON.stringify({last:last[0],recipe_ids:last[1],durations:durations}) : JSON.stringify({last:last[0],recipe_ids:last[1],durations:null}),
+			    content = '<form method="post" action="/prep"> <input type="hidden" name="prep-recipes" value=' + string + '> </form>';
+			$(content).appendTo('body').submit();
+		});
+
+		function loadStyleSheet(src) {
+            if (document.createStyleSheet){
+                document.createStyleSheet(src);
+            } else {
+                $('head').append($('<link rel="stylesheet" href='+src+'>'));
+            };
+        };
+
+		function renderModal() {
+			var remembering = remember.prop('checked'),
+            	recipe_ids = (!remembering) ? [] : undefined,
+            	new_last = (!remembering) ? {'meal_time':'asap'} : undefined;
+          	recipes.filter(':checked').each(function() {
+          		var recipe_title = $(this).parent().text(),
+                	reduced_title = (recipe_title.length > 26) ? recipe_title.substr(0,26) + ' ...' : recipe_title,
+                	recipe_id = $(this).val(),
+                	value = (remembering) ? last[recipe_id]['relative_finish_time'] : 0,
+                	content = '<li> <div class="form-group form-inline recipe-group"> ' + '<label class="h5" for=' + recipe_id + '>' + reduced_title + '</label> ' +
+                	'<input class = "form-control relativeFinishTime" name=' + recipe_id + ' type="number" step="1" min = "0" value=' + value + '> </div> </li>';
+            	$('#relative-finish-times').append(content);
+            	if (!remembering) {recipe_ids.push(recipe_id); new_last[recipe_id]={'relative_finish_time':0,'scale_factor':1}};
+          	});
+          	if (!remembering) {
+          		$.post('/durations',{recipe_ids:recipe_ids}, function(data) {
+          			window.durations = data;
+              		window.last = new_last;
+              		window.relative_finish_times = $('.relativeFinishTime');
+              		setCookTime();
+              		setEarliestMealTime();
+              		$('#general_meal_time').val('ASAP').change();
+              		runRemember();
+              		setRecipes();
+            	});
+          	} else {
+  				console.log('not posting !');
+            	window.relative_finish_times = $('.relativeFinishTime');
+            	setCookTime();
+            	setEarliestMealTime();
+            	var gmt = $('#general_meal_time'),
+              		meal_time = last.meal_time;  /// handling weather to restore meal time or not
+            	if (meal_time !== 'asap') {
+            		$('#datetimepicker').data("DateTimePicker").date(moment(new Date(meal_time)));
+              		gmt.val('Delay').trigger('change',[true]);
+              		return
+            	};
+            	gmt.val('ASAP').change();
+          	};
+        };
+
+		if (remember.prop('checked')) {  /// get durations, if remembering.
+			var recipe_ids = recipes.filter(':checked').map(function() {return $(this).val()}).get();
+			$.post('/durations',{recipe_ids:recipe_ids}, function(data) {
+				window.durations = data;
+			});
+		};
+
+		$.get('/getphone',function(data) {  /// get user phone
+			window.user_phone = data;
+		});
+
+		loadStyleSheet("{{url_for('static',filename='cook_plan.css')}}");
+
+		loadStyleSheet("{{url_for('static',filename='bootstrap-datetimepicker.min.css')}}");
+
+		$.getScript("{{url_for('static',filename='bootstrap.min.js')}}", function() {$('#delete').popover({content:'<button class="btn btn-danger" id="confirm-delete">Yes</button>'});});
+
+		$.getScript("{{url_for('static',filename='moment.js')}}", function() {
+			$.getScript("{{url_for('static',filename='bootstrap-datetimepicker.min.js')}}", function() {
+				$.getScript("{{url_for('static',filename='cook_plan.js')}}");
+			});
+		});
+	</script>
+</body>
+</html>

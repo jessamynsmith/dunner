@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Cook</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="{{url_for('static',filename='bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='cook.css')}}">
+	<link rel="shortcut icon" href="{{url_for('static',filename='images/favicon.ico')}}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{{url_for('doStuff')}}">
+                <img src="{{url_for('static',filename='images/logo.png')}}">
+            </a>
+        </div>
+        <input class="btn navbar-btn" type='button' value='Start Cooking'>
+        <input class="btn navbar-btn ttr-button" type='button' data-toggle="popover" data-html=true data-placement="bottom" value="Total Time Remaining">
+        <input class="btn navbar-btn" type="button" id="post-mortem" value="Post-mortem">
+        <div class="alert alert-success alert-dismissible" role="alert">
+	    	Good Times!
+	    	<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	    </div>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="{{url_for('getHelp')}}">Help</a></li>
+            <li><a href="{{url_for('gdisconnect')}}">Log Out</a></li>
+        </ul>
+      </div>
+    </nav>
+    <form id = "corrections" method = "post" action="{{url_for('displayCorrections')}}" role="form">
+    	<div class="container">
+    		{% set old_row = 1 %}
+    		<div class="row row-eq-height">
+    		{% for recipe in recipes %}
+    		{% set this_row = ((loop.index+1)/3)|round|int %}
+    		{% if this_row != old_row %}
+    		</div>
+    		<div class="row row-eq-height">
+    		{% endif %}
+    			<div class="col-md-4" id="{{recipe.id}}">
+    				{% set title = recipe.name %}
+					{% if title|length > 26 %}
+					{% set title = title[0:26] + ' ...' %}
+					{% endif %}
+    				<h3>{{title}}</h3>
+					<h4>In <span class="time">00:00:00</span></h4>
+					<p class="description"></p>
+					<input class="pause btn btn-xs" type="button" value="Not Ready" disabled/>
+					<input class="skip btn btn-xs" type="button" value="Ready Now" disabled/>
+    			</div>
+    			{% set old_row = this_row %}
+    		{% endfor %}
+    		</div>
+    	</div>
+	</form>
+	<script>
+
+		var steps = {{steps|tojson}},
+			times = {{start_times|tojson|safe}},
+			next = {},
+			check = "{{recipe_ids}}".split('/'),
+			step_ids = {},
+			m = 0,
+			missing =  3 - $('.row').last().find('.col-md-4').length;
+
+		function makePeripheral(timer, pauser, skipper) {
+			timer.removeClass('urgent');
+			skipper.css('width','100%');
+			pauser.hide();
+		};
+
+		function pad(number) {
+			if (number < 10) {return '0' + number;};
+			return '' + number;
+		};
+
+		function formatTime(time) {
+			var hour = parseInt(time / 3600),
+				min = parseInt(time / 60) - (hour*60),
+        		sec = time - (hour*3600) - (min*60);
+        	return (hour > 0 ? pad(hour) : "00") + ":" + (min > 0 ? pad(min) : "00") + ":" + pad(sec);
+		};
+
+		function loadFirstStep(id, description, duration, step_id) {
+			var parent = $('#'+id),
+				timer = parent.find('.time'),
+				relative_start_time = times[id];
+			if (relative_start_time<=30) {
+				timer.addClass('urgent');
+				parent.find('.skip').css('width','50%');
+				parent.find('.pause').show();
+			} else {
+				makePeripheral(timer,parent.find('.pause'),parent.find('.skip'));
+			};
+			parent.find('.description').html(description);
+			timer.html(formatTime(relative_start_time));
+			next[id] = duration;
+			step_ids[id]={this:null,next:step_id};
+		};
+
+		function findFirstStep(id) {
+			for (i = 0; i < steps.length; ++i) {
+				var step = steps[i];
+				if (step.recipe_id === id) {
+					loadFirstStep(id,step.description,step.duration,step.id);
+					steps.splice(i,1);
+					return
+				};
+			};
+			loadFirstStep(id,'This recipe should be done.',0,null);
+		};
+
+		check.forEach(function(id) {findFirstStep(id);});
+
+		while(m < missing) {
+			$('.row').last().append('<div class="col-md-4"></div>');
+			$('.col-md-4').last().css({'border':'none','background-color':'#f1f1f1'});
+			m++;
+		};
+
+		$.getScript("{{url_for('static',filename='bootstrap.min.js')}}", function() {$('.ttr-button').popover({trigger:'manual'});});
+
+		var	remainders = {},
+			time = 0,
+			recipe_count = check.length,
+			alarm = new Audio("{{url_for('static',filename='warning.wav')}}");
+
+		check.forEach(function(id) {remainders[id]={{cook_time}}-times[id];});
+
+		for(var i = 0; i < steps.length; i++) {
+    		delete steps[i]['relative_start_time'];
+		};
+
+		function makeUrgent (timer, pauser, skipper) {
+			alarm.play();
+			timer.addClass('urgent');
+			skipper.css('width','50%');
+			pauser.show();
+		};
+
+		function loadNextStep(id, description, duration, step_id) {
+			var parent = $('#'+id),
+				timer = parent.find('.time'),
+				next_time = next[id];
+			step_ids[id].this = step_ids[id].next;
+			times[id] = next_time;
+			if (next_time<=30) {
+				makeUrgent(timer,parent.find('.pause'),parent.find('.skip'));
+			} else {
+				makePeripheral(timer,parent.find('.pause'),parent.find('.skip'));
+			};
+			parent.find('.description').html(description);
+			timer.html(formatTime(next_time));
+			next[id] = duration;
+			step_ids[id].next = step_id;
+		};
+
+		function findNextStep(id) {
+			for (i = 0; i < steps.length; ++i) {
+				var step = steps[i];
+				if (step.recipe_id === id) {
+					loadNextStep(id,step.description,step.duration,step.id);
+					steps.splice(i,1);
+					return
+				};
+			};
+			if (next[id]===0) {
+				var parent = $('#'+id);
+				parent.find('h4').replaceWith('<h4 class="done">Done.</h4>');
+				parent.find('.skip, .pause, .description').remove();
+				for (i in check) {if (check[i]===id) {check.splice(i,1)}};
+			} else {
+				loadNextStep(id,'This recipe should be done.',0,null);
+			};
+		};
+
+		function runEndGame() {
+			clearInterval(timer_id);
+			$('.ttr-button').remove();
+			if ($('[type="hidden"]').length > 0) {
+				$('#post-mortem').show('slow');
+			} else {
+				$('.alert').show('slow');
+			};
+			$.ajax({
+				type:'POST',
+				url: '/resetlast',
+				dataType:'text'
+			});
+		};
+
+		function checkSteps() {
+			for (i in check) {
+				var id = check[i],
+					currentTime = times[id],
+					parent = $('#'+id),
+					timer = parent.find('.time');
+				if (currentTime === 0) {
+					remainders[id] = remainders[id] - next[id];
+					findNextStep(id)
+				} else {
+					if (currentTime <= 30 && !timer.hasClass('urgent')) {
+						makeUrgent(timer, parent.find('.pause'),parent.find('.skip'));
+					};
+					timer.html(formatTime(currentTime));
+				};
+				times[id] -= 1;
+			};
+			if (check.length === 0 && $('.done').length === recipe_count) {
+				runEndGame();
+			};
+		    time += 1;
+		};
+
+		$(document).on('click', '.pause', function() {
+			var parent = $(this).parent(),
+				id = parent.attr('id'),
+				step = step_ids[id].this;
+			if (step) {
+				var value = time + times[id],
+					content = '<input ' + 'name=' + step.toString() + ' value="' + value.toString() + '" ' + 'type="hidden">';
+				parent.append(content);
+			};
+			for (i in check) {if (check[i]===id) {check.splice(i,1)}};
+			$(this).hide();
+			parent.find('.skip').css('width','100%');
+		});
+
+		$(document).on('click', '.skip', function() {
+			var parent = $(this).parent(),
+				id = parent.attr('id'),
+				step = step_ids[id].this;
+				hidden = parent.find('[type="hidden"]').last();
+			if (hidden.length > 0 && parseInt(hidden.attr('name')) === step) {
+				if (!hidden.hasClass("skip_done")) {
+					var value = hidden.val(),
+						added = time - parseInt(value);
+					hidden.val(added);
+					hidden.addClass('skip_done');
+					times[id] = 0;
+					check.splice(0,0,id);
+				};
+				return
+			};
+			if (step) {
+				var value = times[id]*-1,
+					content = '<input class="skip_done" ' + 'name=' + step.toString() + ' value="' + value.toString() + '" ' + 'type="hidden">';
+				parent.append(content);
+			};
+			times[id] = 0;
+			if ($.inArray(id,check) === -1) {
+				check.splice(0,0,id);
+			};
+		});
+
+		$('[value="Start Cooking"]').click(function() {
+			window.timer_id = setInterval(checkSteps, 1000);
+			$('.skip, .pause').prop('disabled', false);
+			$(this).remove();
+			$('.ttr-button').show('slow');
+		});
+
+		function getRemainders() {
+			var current_remainders = [];
+			for (var id in remainders) {
+				var parent = $('#'+id),
+					title = parent.find('h3').html();
+				if (!parent.find('.done').length) {
+					if ($.inArray(id,check) === -1) {
+					current_remainders.push(title + ' - Unknown');
+					} else {
+						current_remainders.push(title + ' - ' + formatTime(remainders[id] + times[id] + 1));
+					};
+				};
+			};
+			return current_remainders.sort().join('<br>')
+		};
+
+		$(document).on('click', '.ttr-button', function() {
+			if ($(this).hasClass('showing')) {
+				$(this).popover('hide');
+			} else {
+				$(this).data('bs.popover').options.content = getRemainders();
+				$(this).popover('show');
+			};
+			$(this).toggleClass('showing');
+		});
+
+		$('#post-mortem').click(function() {
+			$('#corrections').submit();
+		});
+	</script>
+</body>
+</html>
